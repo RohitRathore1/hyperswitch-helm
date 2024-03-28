@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hyperswitch-helm
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/RohitRathore1/hyperswitch-helm.git'
+    path: charts/incubator/hyperswitch-stack
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: hyperswitch-helm
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true

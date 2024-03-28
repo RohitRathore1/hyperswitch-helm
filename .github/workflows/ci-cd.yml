@@ -1,0 +1,40 @@
+name: Helm CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/incubator/hyperswitch-stack/**'
+
+jobs:
+  helm-lint-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+      
+      - name: Helm Lint
+        run: helm lint ./charts/incubator/hyperswitch-stack/
+
+      # We can add any other additional steps for any additional tests that we may have here
+
+  update-chart-version:
+    needs: helm-lint-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update Chart Version
+        run: |
+          CHART_PATH=./charts/incubator/hyperswitch-stack/Chart.yaml
+          VERSION=$(grep 'version:' $CHART_PATH | awk '{print $2}')
+          NEW_VERSION=$(echo $VERSION | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+          sed -i "s/version: $VERSION/version: $NEW_VERSION/g" $CHART_PATH
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add $CHART_PATH
+          git commit -m "Bump chart version to $NEW_VERSION"
+          git push
