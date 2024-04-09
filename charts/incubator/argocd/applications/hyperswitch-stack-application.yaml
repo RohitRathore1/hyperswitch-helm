@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: hyperswitch-stack
+  labels:
+     app: hyperswitch-sdk
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: prod-cluster
+        url: https://kubernetes.default.svc
+        helm_value: values.yaml
+  template:
+      metadata:
+        name: 'hyperswitch-stack-{{cluster}}'
+      spec:
+        project: default
+        source:
+          path: charts/incubator/hyperswitch-stack
+          repoURL: 'https://github.com/RohitRathore1/hyperswitch-helm.git' # Replace it with your repository name
+          targetRevision: HEAD
+          helm:
+            valueFiles:
+              - '{{helm_value}}'
+        destination:
+          server: '{{url}}'
+          namespace: hyperswitch-stack
+        syncPolicy:
+          syncOptions:
+          - CreateNamespace=true
+          automated:
+            selfHeal: true
+            prune: true

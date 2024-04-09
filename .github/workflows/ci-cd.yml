@@ -19,6 +19,9 @@ jobs:
       - name: Helm Lint
         run: helm lint ./charts/incubator/hyperswitch-stack/
 
+      - name: Run Tests
+        run: ./tests/run-tests.sh
+
       # We can add any other additional steps for any additional tests that we may have here
 
   update-chart-version:
