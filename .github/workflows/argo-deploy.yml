@@ -1,0 +1,23 @@
+name: Deploy with Argo CD
+
+on:
+  workflow_run:
+    workflows: ["Helm CI/CD"]
+    branches: [main]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Deploy to Argo CD
+      run: |
+        argocd login ${{ secrets.ARGOCD_SERVER }} --username admin --password ${{ secrets.ARGOCD_TOKEN }}
+        argocd app sync hyperswitch-stack --prune
+      env:
+        ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+        ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
